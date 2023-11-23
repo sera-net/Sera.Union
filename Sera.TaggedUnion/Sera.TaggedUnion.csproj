@@ -5,6 +5,16 @@
         <LangVersion>12.0</LangVersion>
         <Nullable>enable</Nullable>
         <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+        <AssemblyName>Sera.Union</AssemblyName>
+        <RootNamespace>Sera.TaggedUnion</RootNamespace>
+        <Version>0.1.0</Version>
+        <Description>Tagged union for c#</Description>
+        <PackageProjectUrl>https://github.com/sera-net/Sera.Union</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/sera-net/Sera.Union</RepositoryUrl>
+        <PackageTags>union;tagged;discriminated;unions</PackageTags>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageLicenseFile>LICENSE</PackageLicenseFile>
+        <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
     </PropertyGroup>
 
     <ItemGroup>
@@ -14,6 +24,8 @@
     </ItemGroup>
 
     <ItemGroup>
+        <None Include="..\LICENSE" Pack="true" PackagePath="\"/>
+        <None Include="..\README.md" Pack="true" PackagePath="\"/>
         <None Include="..\Sera.TaggedUnion.Analyzers\bin\Release\netstandard2.0\Sera.TaggedUnion.Analyzers.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>
         <None Include="..\Sera.TaggedUnion.Analyzers\bin\Release\netstandard2.0\zh-Hans\Sera.TaggedUnion.Analyzers.resources.dll" Pack="true" PackagePath="analyzers/dotnet/cs/zh-Hans" Visible="false"/>
     </ItemGroup>

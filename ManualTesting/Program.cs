@@ -10,6 +10,8 @@ Console.WriteLine(b);
 //var foo = new Foo<int>();
 //Console.WriteLine(foo);
 
+//var bar = new Bar<string>();
+//Console.WriteLine(bar);
 
 [Union]
 public partial struct SomeUnmanaged<T> where T : unmanaged
