@@ -7,7 +7,7 @@
 Generate Tagged Union using source generator
 
 - All unmanaged types will overlap
-- All classes will overlap,
+- All classes will overlap
 - Other types will be tiled
 
 ## Example
