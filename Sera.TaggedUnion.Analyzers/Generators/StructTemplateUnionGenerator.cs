@@ -97,7 +97,8 @@ public class StructTemplateUnionGenerator : IIncrementalGenerator
                                 tag = tag_attr.ConstructorArguments.First().Value?.ToString() ?? tag;
                             }
                             var ret_type_symbol = member_symbol.ReturnType;
-                            if (ret_type_symbol.IsUnmanagedType) kind = UnionCaseTypeKind.Unmanaged;
+                            if (ret_type_symbol is ITypeParameterSymbol) kind = UnionCaseTypeKind.None;
+                            else if (ret_type_symbol.IsUnmanagedType) kind = UnionCaseTypeKind.Unmanaged;
                             else if (ret_type_symbol.IsReferenceType) kind = UnionCaseTypeKind.Class;
                             cases.Add(new UnionCase(case_name, tag, ret_type, kind));
                         }
