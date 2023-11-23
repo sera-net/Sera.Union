@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sera.TaggedUnion", "Sera.TaggedUnion\Sera.TaggedUnion.csproj", "{FA086384-2C1F-4C9F-BFA1-DFBC4D257A28}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sera.TaggedUnion.Analyzers", "Sera.TaggedUnion.Analyzers\Sera.TaggedUnion.Analyzers.csproj", "{5A6BB5A9-AF6E-4F83-98C0-3B8FA0D22BAA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ManualTesting", "ManualTesting\ManualTesting.csproj", "{1C9AA6A6-A20D-4CD0-8E7F-894DB2BA3F6D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{DE12E570-CA4F-4A4D-9FD2-0CCEC6E98F53}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FA086384-2C1F-4C9F-BFA1-DFBC4D257A28}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FA086384-2C1F-4C9F-BFA1-DFBC4D257A28}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FA086384-2C1F-4C9F-BFA1-DFBC4D257A28}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FA086384-2C1F-4C9F-BFA1-DFBC4D257A28}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5A6BB5A9-AF6E-4F83-98C0-3B8FA0D22BAA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5A6BB5A9-AF6E-4F83-98C0-3B8FA0D22BAA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5A6BB5A9-AF6E-4F83-98C0-3B8FA0D22BAA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5A6BB5A9-AF6E-4F83-98C0-3B8FA0D22BAA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1C9AA6A6-A20D-4CD0-8E7F-894DB2BA3F6D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1C9AA6A6-A20D-4CD0-8E7F-894DB2BA3F6D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1C9AA6A6-A20D-4CD0-8E7F-894DB2BA3F6D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1C9AA6A6-A20D-4CD0-8E7F-894DB2BA3F6D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DE12E570-CA4F-4A4D-9FD2-0CCEC6E98F53}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DE12E570-CA4F-4A4D-9FD2-0CCEC6E98F53}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DE12E570-CA4F-4A4D-9FD2-0CCEC6E98F53}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DE12E570-CA4F-4A4D-9FD2-0CCEC6E98F53}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
