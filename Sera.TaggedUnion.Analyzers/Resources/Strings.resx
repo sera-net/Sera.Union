@@ -21,9 +21,6 @@
     <data name="Generator.Union.Error.MultiTemplate" xml:space="preserve">
         <value>Multiple Union templates are not allowed</value>
     </data>
-    <data name="Generator.Union.Error.MustAbstract" xml:space="preserve">
-        <value>Template must be an abstract class</value>
-    </data>
     <data name="Generator.Union.Error.Record" xml:space="preserve">
         <value>Template cannot be a record</value>
     </data>

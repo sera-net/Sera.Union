@@ -45,8 +45,8 @@ public class StructTemplateUnionGenerator : IIncrementalGenerator
                 Utils.GetUsings(syntax, usings);
                 var genBase = new GenBase(rawFullName, nullable, usings, nameWraps, nameWrap);
                 var templates = syntax.Members
-                    .Where(static t => t is ClassDeclarationSyntax or RecordDeclarationSyntax)
-                    .Cast<TypeDeclarationSyntax>()
+                    .Where(static t => t is InterfaceDeclarationSyntax)
+                    .Cast<InterfaceDeclarationSyntax>()
                     .Select(t =>
                     {
                         var symbol = semanticModel.GetDeclaredSymbol(t);
@@ -70,17 +70,6 @@ public class StructTemplateUnionGenerator : IIncrementalGenerator
                 var cases = new List<UnionCase>();
                 foreach (var (template, template_symbol) in templates)
                 {
-                    if (template is RecordDeclarationSyntax)
-                    {
-                        var desc = Utils.MakeWarning(Strings.Get("Generator.Union.Error.Record"));
-                        diagnostics.Value.Add(Diagnostic.Create(desc, template.Identifier.GetLocation()));
-                        continue;
-                    }
-                    if (!template_symbol!.IsAbstract)
-                    {
-                        var desc = Utils.MakeWarning(Strings.Get("Generator.Union.Error.MustAbstract"));
-                        diagnostics.Value.Add(Diagnostic.Create(desc, template.Identifier.GetLocation()));
-                    }
                     foreach (var (member, i) in template.Members.Select((a, b) => (a, b)))
                     {
                         if (member is MethodDeclarationSyntax mds)

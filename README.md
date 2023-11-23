@@ -17,15 +17,15 @@ Generate Tagged Union using source generator
 public readonly partial struct Union1
 {
     [UnionTemplate]
-    private abstract class Template
+    private interface Template
     {
-        public abstract int A();
-        public abstract string B();
-        public abstract bool C();
-        public abstract (int a, int b) D();
-        public abstract void E();
-        public abstract List<int>? F();
-        public abstract (int a, string b) G();
+        int A();
+        string B();
+        bool C();
+        (int a, int b) D();
+        void E();
+        List<int>? F();
+        (int a, string b) G();
     }
 }
 ```
@@ -294,21 +294,36 @@ public readonly partial struct Union1
 
 </details>
 
+#### How to use
+
+```cs
+var u = Union1.MakeA(123);
+
+if (u is { Tag: Union1.Tags.A, A: var a }) { }
+
+if (u is { IsA: true, A: var a }) { }
+
+if (u.IsA)
+{
+    var a = u.A;
+}
+```
+
 ---
 
 ### Support generics
 
-**Generics don't overlap**
+**Generics will not overlap**
 
 ```cs
 [Union]
 public partial struct Option<T>
 {
     [UnionTemplate]
-    private abstract class Template
+    private interface Template
     {
-        public abstract T Some();
-        public abstract void None();
+        T Some();
+        void None();
     }
 }
 
@@ -316,10 +331,10 @@ public partial struct Option<T>
 public partial struct Result<T, E>
 {
     [UnionTemplate]
-    private abstract class Template
+    private interface Template
     {
-        public abstract E Ok();
-        public abstract E Err();
+        T Ok();
+        E Err();
     }
 }
 ```
@@ -470,7 +485,6 @@ public partial struct Option<T>
 
 using Sera.TaggedUnion;
 
-
 public partial struct Result<T, E>
     : global::Sera.TaggedUnion.ITaggedUnion
     , global::System.IEquatable<Result<T, E>>
@@ -498,18 +512,20 @@ public partial struct Result<T, E>
     [global::System.Runtime.CompilerServices.CompilerGenerated]
     private struct __impl_
     {
-        public E _0;
+        public T _0;
+        public E _1;
         public readonly Tags _tag;
 
         public __impl_(Tags _tag)
         {
             this._0 = default!;
+            this._1 = default!;
             this._tag = _tag;
         }
     }
 
     [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-    public static Result<T, E> MakeOk(E value)
+    public static Result<T, E> MakeOk(T value)
     {
         var _impl = new __impl_(Tags.Ok);
         _impl._0 = value;
@@ -519,7 +535,7 @@ public partial struct Result<T, E>
     public static Result<T, E> MakeErr(E value)
     {
         var _impl = new __impl_(Tags.Err);
-        _impl._0 = value;
+        _impl._1 = value;
         return new Result<T, E>(_impl);
     }
 
@@ -534,7 +550,7 @@ public partial struct Result<T, E>
         get => this._impl._tag == Tags.Err;
     }
 
-    public E Ok
+    public T Ok
     {
         [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         readonly get => !this.IsOk ? default! : this._impl._0;
@@ -544,15 +560,15 @@ public partial struct Result<T, E>
     public E Err
     {
         [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-        readonly get => !this.IsErr ? default! : this._impl._0;
+        readonly get => !this.IsErr ? default! : this._impl._1;
         [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-        set { if (this.IsErr) { this._impl._0 = value; } }
+        set { if (this.IsErr) { this._impl._1 = value; } }
     }
 
     [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     public readonly bool Equals(Result<T, E> other) => this.Tag != other.Tag ? false : this.Tag switch
     {
-        Tags.Ok => global::System.Collections.Generic.EqualityComparer<E>.Default.Equals(this.Ok, other.Ok),
+        Tags.Ok => global::System.Collections.Generic.EqualityComparer<T>.Default.Equals(this.Ok, other.Ok),
         Tags.Err => global::System.Collections.Generic.EqualityComparer<E>.Default.Equals(this.Err, other.Err),
         _ => true,
     };
@@ -576,7 +592,7 @@ public partial struct Result<T, E>
     [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     public readonly int CompareTo(Result<T, E> other) => this.Tag != other.Tag ? Comparer<Tags>.Default.Compare(this.Tag, other.Tag) : this.Tag switch
     {
-        Tags.Ok => global::System.Collections.Generic.Comparer<E>.Default.Compare(this.Ok, other.Ok),
+        Tags.Ok => global::System.Collections.Generic.Comparer<T>.Default.Compare(this.Ok, other.Ok),
         Tags.Err => global::System.Collections.Generic.Comparer<E>.Default.Compare(this.Err, other.Err),
         _ => 0,
     };

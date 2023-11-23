@@ -15,7 +15,7 @@ public sealed class UnionAttribute : Attribute
     public Type? TagsUnderlying { get; set; }
 }
 
-[AttributeUsage(AttributeTargets.Class, Inherited = false)]
+[AttributeUsage(AttributeTargets.Interface, Inherited = false)]
 public sealed class UnionTemplateAttribute : Attribute;
 
 [AttributeUsage(AttributeTargets.Method, Inherited = false)]

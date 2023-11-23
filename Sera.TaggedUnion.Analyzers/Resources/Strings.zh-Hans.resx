@@ -21,9 +21,6 @@
     <data name="Generator.Union.Error.MultiTemplate" xml:space="preserve">
         <value>不允许有多个联合模板</value>
     </data>
-    <data name="Generator.Union.Error.MustAbstract" xml:space="preserve">
-        <value>模板必须是抽象类</value>
-    </data>
     <data name="Generator.Union.Error.Record" xml:space="preserve">
         <value>模板不能是记录</value>
     </data>

@@ -13,13 +13,15 @@ Console.WriteLine(b);
 //var bar = new Bar<string>();
 //Console.WriteLine(bar);
 
+var ss = SomeSome<int>.MakeFoo(default);
+
 [Union]
 public partial struct SomeUnmanaged<T> where T : unmanaged
 {
     [UnionTemplate]
-    private abstract class Template
+    private interface Template
     {
-        public abstract T Foo();
+        T Foo();
     }
 }
 
@@ -27,9 +29,19 @@ public partial struct SomeUnmanaged<T> where T : unmanaged
 public partial struct SomeClass<T> where T : class
 {
     [UnionTemplate]
-    private abstract class Template
+    private interface Template
     {
-        public abstract T Foo();
+        T Foo();
+    }
+}
+
+[Union]
+public partial struct SomeSome<T> where T : unmanaged
+{
+    [UnionTemplate]
+    private interface Template
+    {
+        (T a, int b) Foo();
     }
 }
 

@@ -6,15 +6,15 @@ namespace Tests;
 public readonly partial struct Union1
 {
     [UnionTemplate]
-    private abstract class Template
+    private interface Template
     {
-        public abstract int A();
-        public abstract string B();
-        public abstract bool C();
-        public abstract (int a, int b) D();
-        public abstract void E();
-        public abstract List<int>? F();
-        public abstract (int a, string b) G();
+        int A();
+        string B();
+        bool C();
+        (int a, int b) D();
+        void E();
+        List<int>? F();
+        (int a, string b) G();
     }
 }
 
@@ -22,15 +22,15 @@ public readonly partial struct Union1
 public partial struct Union2
 {
     [UnionTemplate]
-    private abstract class Template
+    private interface Template
     {
-        public abstract int A();
-        public abstract string B();
-        public abstract bool C();
-        public abstract (int a, int b) D();
-        public abstract void E();
-        public abstract List<int>? F();
-        public abstract (int a, string b) G();
+        int A();
+        string B();
+        bool C();
+        (int a, int b) D();
+        void E();
+        List<int>? F();
+        (int a, string b) G();
     }
 }
 
@@ -38,10 +38,10 @@ public partial struct Union2
 public partial struct Option<T>
 {
     [UnionTemplate]
-    private abstract class Template
+    private interface Template
     {
-        public abstract T Some();
-        public abstract void None();
+        T Some();
+        void None();
     }
 }
 
@@ -49,10 +49,10 @@ public partial struct Option<T>
 public partial struct Result<T, E>
 {
     [UnionTemplate]
-    private abstract class Template
+    private interface Template
     {
-        public abstract E Ok();
-        public abstract E Err();
+        T Ok();
+        E Err();
     }
 }
 
@@ -75,10 +75,10 @@ public partial struct Union6 { }
 public partial struct Union7
 {
     [UnionTemplate]
-    private abstract class Template
+    private interface Template
     {
         [UnionTag(123)]
-        public abstract int Foo();
+        int Foo();
     }
 }
 
