@@ -194,13 +194,16 @@ public class TemplateStructUnion
             .GroupBy(a => a.Kind)
             .ToDictionary(g => g.Key, g => g.ToArray());
 
+        var __class_ = AnyGeneric ? $"ℍⅈⅆⅇ__{HashName}__class_" : "__class_";
+        var __unmanaged_ = AnyGeneric ? $"ℍⅈⅆⅇ__{HashName}__unmanaged_" : "__unmanaged_";
+        
         if (dict.TryGetValue(UnionCaseTypeKind.Class, out _))
         {
-            sb.AppendLine($"        public __{HashName}__class_ _class_;");
+            sb.AppendLine($"        public {__class_} _class_;");
         }
         if (dict.TryGetValue(UnionCaseTypeKind.Unmanaged, out _))
         {
-            sb.AppendLine($"        public __{HashName}__unmanaged_ _unmanaged_;");
+            sb.AppendLine($"        public {__unmanaged_} _unmanaged_;");
         }
         if (dict.TryGetValue(UnionCaseTypeKind.None, out var other_cases))
         {
@@ -234,7 +237,7 @@ public class TemplateStructUnion
             ex_sb.AppendLine($"{space}{CompilerGenerated}");
             ex_sb.AppendLine(
                 $"{space}[global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Explicit)]");
-            ex_sb.AppendLine($"{space}internal struct __{HashName}__class_");
+            ex_sb.AppendLine($"{space}internal struct {__class_}");
             ex_sb.AppendLine($"{space}{{");
             foreach (var (type, i) in types.Select((a, b) => (a, b)))
             {
@@ -261,7 +264,7 @@ public class TemplateStructUnion
             ex_sb.AppendLine($"{space}{CompilerGenerated}");
             ex_sb.AppendLine(
                 $"{space}[global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Explicit)]");
-            ex_sb.AppendLine($"{space}internal struct __{HashName}__unmanaged_");
+            ex_sb.AppendLine($"{space}internal struct {__unmanaged_}");
             ex_sb.AppendLine($"{space}{{");
             foreach (var (type, i) in types.Select((a, b) => (a, b)))
             {
