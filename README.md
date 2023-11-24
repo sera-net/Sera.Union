@@ -79,8 +79,9 @@ public readonly partial struct Union1
         public (int a, string b) _0;
         public readonly Tags _tag;
 
+        [global::System.Runtime.CompilerServices.CompilerGenerated]
         [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Explicit)]
-        public struct __class_
+        internal struct __class_
         {
             [global::System.Runtime.InteropServices.FieldOffset(0)]
             public string _0;
@@ -88,15 +89,16 @@ public readonly partial struct Union1
             public List<int>? _1;
         }
 
+        [global::System.Runtime.CompilerServices.CompilerGenerated]
         [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Explicit)]
-        public struct __unmanaged_
+        internal struct __unmanaged_
         {
             [global::System.Runtime.InteropServices.FieldOffset(0)]
-            public global::Sera.TaggedUnion.Hidden.Case<int> _0;
+            public int _0;
             [global::System.Runtime.InteropServices.FieldOffset(0)]
-            public global::Sera.TaggedUnion.Hidden.Case<bool> _1;
+            public bool _1;
             [global::System.Runtime.InteropServices.FieldOffset(0)]
-            public global::Sera.TaggedUnion.Hidden.Case<(int a, int b)> _2;
+            public (int a, int b) _2;
         }
 
         public __impl_(Tags _tag)
@@ -112,7 +114,7 @@ public readonly partial struct Union1
     public static Union1 MakeA(int value)
     {
         var _impl = new __impl_(Tags.A);
-        _impl._unmanaged_._0.Value = value;
+        _impl._unmanaged_._0 = value;
         return new Union1(_impl);
     }
     [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
@@ -126,14 +128,14 @@ public readonly partial struct Union1
     public static Union1 MakeC(bool value)
     {
         var _impl = new __impl_(Tags.C);
-        _impl._unmanaged_._1.Value = value;
+        _impl._unmanaged_._1 = value;
         return new Union1(_impl);
     }
     [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
     public static Union1 MakeD((int a, int b) value)
     {
         var _impl = new __impl_(Tags.D);
-        _impl._unmanaged_._2.Value = value;
+        _impl._unmanaged_._2 = value;
         return new Union1(_impl);
     }
     [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
@@ -196,32 +198,32 @@ public readonly partial struct Union1
     public int A
     {
         [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-        get => !this.IsA ? default! : this._impl._unmanaged_._0.Value;
+        get => !this.IsA ? default! : this._impl._unmanaged_._0!;
     }
     public string B
     {
         [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-        get => !this.IsB ? default! : this._impl._class_._0;
+        get => !this.IsB ? default! : this._impl._class_._0!;
     }
     public bool C
     {
         [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-        get => !this.IsC ? default! : this._impl._unmanaged_._1.Value;
+        get => !this.IsC ? default! : this._impl._unmanaged_._1!;
     }
     public (int a, int b) D
     {
         [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-        get => !this.IsD ? default! : this._impl._unmanaged_._2.Value;
+        get => !this.IsD ? default! : this._impl._unmanaged_._2!;
     }
     public List<int>? F
     {
         [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-        get => !this.IsF ? default! : this._impl._class_._1;
+        get => !this.IsF ? default! : this._impl._class_._1!;
     }
     public (int a, string b) G
     {
         [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-        get => !this.IsG ? default! : this._impl._0;
+        get => !this.IsG ? default! : this._impl._0!;
     }
 
     [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
@@ -351,7 +353,6 @@ Generate output:
 
 using Sera.TaggedUnion;
 
-
 public partial struct Option<T>
     : global::Sera.TaggedUnion.ITaggedUnion
     , global::System.IEquatable<Option<T>>
@@ -417,7 +418,7 @@ public partial struct Option<T>
     public T Some
     {
         [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-        readonly get => !this.IsSome ? default! : this._impl._0;
+        readonly get => !this.IsSome ? default! : this._impl._0!;
         [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         set { if (this.IsSome) { this._impl._0 = value; } }
     }
@@ -553,14 +554,14 @@ public partial struct Result<T, E>
     public T Ok
     {
         [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-        readonly get => !this.IsOk ? default! : this._impl._0;
+        readonly get => !this.IsOk ? default! : this._impl._0!;
         [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         set { if (this.IsOk) { this._impl._0 = value; } }
     }
     public E Err
     {
         [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-        readonly get => !this.IsErr ? default! : this._impl._1;
+        readonly get => !this.IsErr ? default! : this._impl._1!;
         [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         set { if (this.IsErr) { this._impl._1 = value; } }
     }

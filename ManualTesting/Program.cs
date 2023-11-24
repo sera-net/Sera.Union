@@ -58,3 +58,42 @@ public partial struct SomeClass<T> where T : class
 //}
 
 file struct FileStruct {}
+
+[Union]
+public readonly partial struct Union1
+{
+    [UnionTemplate]
+    private interface Template
+    {
+        int A();
+        string B();
+        bool C();
+        (int a, int b) D();
+        void E();
+        List<int>? F();
+        (int a, string b) G();
+    }
+}
+
+
+[Union]
+public partial struct Option<T>
+{
+    [UnionTemplate]
+    private interface Template
+    {
+        T Some();
+        void None();
+    }
+}
+
+[Union]
+public partial struct Result<T, E>
+{
+    [UnionTemplate]
+    private interface Template
+    {
+        T Ok();
+        E Err();
+    }
+}
