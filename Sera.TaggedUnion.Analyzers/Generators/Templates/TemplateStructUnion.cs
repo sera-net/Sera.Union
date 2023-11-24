@@ -496,7 +496,7 @@ public class TemplateStructUnion
 
         sb.AppendLine($"    {AggressiveInlining}");
         sb.AppendLine(
-            $"    public readonly int CompareTo({TypeName} other) => this.Tag != other.Tag ? Comparer<{tags_name}>.Default.Compare(this.Tag, other.Tag) : this.Tag switch");
+            $"    public readonly int CompareTo({TypeName} other) => this.Tag != other.Tag ? global::System.Collections.Generic.Comparer<{tags_name}>.Default.Compare(this.Tag, other.Tag) : this.Tag switch");
         sb.AppendLine($"    {{");
         foreach (var @case in Cases)
         {
