@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
+using System.Security.Cryptography;
+using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Sera.TaggedUnion.Analyzers.Resources;
@@ -12,10 +15,10 @@ public enum UnionCaseTypeKind
 {
     None,
     Unmanaged,
-    Class,
+    Class
 }
 
-public record struct UnionCase(string Name, string Tag, string Type, UnionCaseTypeKind Kind);
+public record struct UnionCase(string Name, string Tag, string Type, UnionCaseTypeKind Kind, bool IsGeneric);
 
 public record struct UnionAttr(string TagsName, bool ExternalTags, string ExternalTagsName, string? TagsUnderlying)
 {
@@ -37,7 +40,8 @@ public record struct UnionAttr(string TagsName, bool ExternalTags, string Extern
                     break;
                 case "TagsUnderlying":
                     a.TagsUnderlying = kv.Value.Value?.ToString();
-                    if (a.TagsUnderlying is not ("sbyte" or "byte" or "short" or "ushort" or "int" or "uint" or "long" or "ulong"))
+                    if (a.TagsUnderlying is not ("sbyte" or "byte" or "short" or "ushort" or "int" or "uint" or "long"
+                        or "ulong"))
                     {
                         a.TagsUnderlying = null;
                         var desc = Utils.MakeError(Strings.Get("Generator.Union.Error.Underlying"));
@@ -63,13 +67,27 @@ public record struct UnionAttr(string TagsName, bool ExternalTags, string Extern
 }
 
 public class TemplateStructUnion
-    (GenBase GenBase, string Name, UnionAttr Attr, bool ReadOnly, List<UnionCase> Cases) : ATemplate(GenBase)
+(GenBase GenBase, string Name, UnionAttr Attr, bool ReadOnly, List<UnionCase> Cases,
+    bool AnyGeneric) : ATemplate(GenBase)
 {
     public const string AggressiveInlining =
         "[global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]";
 
+    public const string CompilerGenerated = "[global::System.Runtime.CompilerServices.CompilerGenerated]";
+
+    private List<StringBuilder> ExTypes = new();
+
+    private string HashName = "";
+
     protected override void DoGen()
     {
+        {
+            using var sha = SHA256.Create();
+            var bytes = sha.ComputeHash(MemoryMarshal.AsBytes(FullName.AsSpan()).ToArray());
+            HashName = string.Join("", bytes.Select(b => $"{b:X2}"));
+            HashName = $"{Name}_{HashName}";
+        }
+
         var impl_name = $"__impl_";
         var tags_name = Attr.ExternalTags ? string.Format(Attr.ExternalTagsName, Name) : Attr.TagsName;
 
@@ -135,6 +153,12 @@ public class TemplateStructUnion
         GenToStr(tags_name);
 
         sb.AppendLine("}");
+
+        foreach (var ex in ExTypes)
+        {
+            sb.AppendLine();
+            sb.Append(ex);
+        }
     }
 
     Dictionary<string, int>? class_types;
@@ -161,7 +185,7 @@ public class TemplateStructUnion
 
     private void GenImpl(string name, string tags_name)
     {
-        sb.AppendLine($"    [global::System.Runtime.CompilerServices.CompilerGenerated]");
+        sb.AppendLine($"    {CompilerGenerated}");
         sb.AppendLine($"    private struct {name}");
         sb.AppendLine($"    {{");
 
@@ -172,11 +196,11 @@ public class TemplateStructUnion
 
         if (dict.TryGetValue(UnionCaseTypeKind.Class, out _))
         {
-            sb.AppendLine($"        public __class_ _class_;");
+            sb.AppendLine($"        public __{HashName}__class_ _class_;");
         }
         if (dict.TryGetValue(UnionCaseTypeKind.Unmanaged, out _))
         {
-            sb.AppendLine($"        public __unmanaged_ _unmanaged_;");
+            sb.AppendLine($"        public __{HashName}__unmanaged_ _unmanaged_;");
         }
         if (dict.TryGetValue(UnionCaseTypeKind.None, out var other_cases))
         {
@@ -197,28 +221,34 @@ public class TemplateStructUnion
 
         if (dict.TryGetValue(UnionCaseTypeKind.Class, out var class_cases))
         {
+            var ex_sb = AnyGeneric ? new StringBuilder() : sb;
+            var space = AnyGeneric ? "" : "        ";
             var types = class_cases.AsParallel().AsOrdered()
-                .Select(a => a.Type)
+                .Select(a => a.IsGeneric ? "object?" : a.Type)
                 .Distinct()
-                .ToArray();
+                .ToList();
             class_types = types
                 .Select((a, b) => (a, b))
                 .ToDictionary(a => a.a, a => a.b);
-            sb.AppendLine();
-            sb.AppendLine(
-                $"        [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Explicit)]");
-            sb.AppendLine($"        public struct __class_");
-            sb.AppendLine($"        {{");
+            if (!AnyGeneric) ex_sb.AppendLine();
+            ex_sb.AppendLine($"{space}{CompilerGenerated}");
+            ex_sb.AppendLine(
+                $"{space}[global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Explicit)]");
+            ex_sb.AppendLine($"{space}internal struct __{HashName}__class_");
+            ex_sb.AppendLine($"{space}{{");
             foreach (var (type, i) in types.Select((a, b) => (a, b)))
             {
-                sb.AppendLine($"            [global::System.Runtime.InteropServices.FieldOffset(0)]");
-                sb.AppendLine($"            public {type} _{i};");
+                ex_sb.AppendLine($"{space}    [global::System.Runtime.InteropServices.FieldOffset(0)]");
+                ex_sb.AppendLine($"{space}    public {type} _{i};");
             }
-            sb.AppendLine($"        }}");
+            ex_sb.AppendLine($"{space}}}");
+            if (AnyGeneric) ExTypes.Add(ex_sb);
         }
 
         if (dict.TryGetValue(UnionCaseTypeKind.Unmanaged, out var unmanaged_cases))
         {
+            var ex_sb = AnyGeneric ? new StringBuilder() : sb;
+            var space = AnyGeneric ? "" : "        ";
             var types = unmanaged_cases.AsParallel().AsOrdered()
                 .Select(a => a.Type)
                 .Where(t => t != "void")
@@ -227,17 +257,19 @@ public class TemplateStructUnion
             unmanaged_types = types
                 .Select((a, b) => (a, b))
                 .ToDictionary(a => a.a, a => a.b);
-            sb.AppendLine();
-            sb.AppendLine(
-                $"        [global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Explicit)]");
-            sb.AppendLine($"        public struct __unmanaged_");
-            sb.AppendLine($"        {{");
+            if (!AnyGeneric) ex_sb.AppendLine();
+            ex_sb.AppendLine($"{space}{CompilerGenerated}");
+            ex_sb.AppendLine(
+                $"{space}[global::System.Runtime.InteropServices.StructLayout(global::System.Runtime.InteropServices.LayoutKind.Explicit)]");
+            ex_sb.AppendLine($"{space}internal struct __{HashName}__unmanaged_");
+            ex_sb.AppendLine($"{space}{{");
             foreach (var (type, i) in types.Select((a, b) => (a, b)))
             {
-                sb.AppendLine($"            [global::System.Runtime.InteropServices.FieldOffset(0)]");
-                sb.AppendLine($"            public global::Sera.TaggedUnion.Hidden.Case<{type}> _{i};");
+                ex_sb.AppendLine($"{space}    [global::System.Runtime.InteropServices.FieldOffset(0)]");
+                ex_sb.AppendLine($"{space}    public {type} _{i};");
             }
-            sb.AppendLine($"        }}");
+            ex_sb.AppendLine($"{space}}}");
+            if (AnyGeneric) ExTypes.Add(ex_sb);
         }
 
         #region ctor
@@ -294,13 +326,21 @@ public class TemplateStructUnion
                 }
                 else if (@case.Kind == UnionCaseTypeKind.Class)
                 {
-                    var index = class_types![@case.Type];
-                    sb.AppendLine($"        _impl._class_._{index} = value;");
+                    if (@case.IsGeneric)
+                    {
+                        var index = class_types!["object?"];
+                        sb.AppendLine($"        _impl._class_._{index} = value;");
+                    }
+                    else
+                    {
+                        var index = class_types![@case.Type];
+                        sb.AppendLine($"        _impl._class_._{index} = value;");
+                    }
                 }
                 else if (@case.Kind == UnionCaseTypeKind.Unmanaged)
                 {
                     var index = unmanaged_types![@case.Type];
-                    sb.AppendLine($"        _impl._unmanaged_._{index}.Value = value;");
+                    sb.AppendLine($"        _impl._unmanaged_._{index} = value;");
                 }
             }
             sb.AppendLine($"        return new {TypeName}(_impl);");
@@ -328,22 +368,39 @@ public class TemplateStructUnion
             sb.AppendLine($"    public {@case.Type} {@case.Name}");
             sb.AppendLine($"    {{");
 
-            void GenField()
+            void GenField(bool get)
             {
                 if (@case.Kind == UnionCaseTypeKind.None)
                 {
                     var index = other_types![@case.Type];
                     sb.Append($"this._impl._{index}");
+                    if (!get) sb.Append($" = ");
+                    else sb.Append("!");
                 }
                 else if (@case.Kind == UnionCaseTypeKind.Class)
                 {
-                    var index = class_types![@case.Type];
-                    sb.Append($"this._impl._class_._{index}");
+                    if (@case.IsGeneric)
+                    {
+                        if (get) sb.Append($"({@case.Type})");
+                        var index = class_types!["object?"];
+                        sb.Append($"this._impl._class_._{index}");
+                        if (!get) sb.Append($" = ({@case.Type})");
+                        else sb.Append("!");
+                    }
+                    else
+                    {
+                        var index = class_types![@case.Type];
+                        sb.Append($"this._impl._class_._{index}");
+                        if (!get) sb.Append($" = ");
+                        else sb.Append("!");
+                    }
                 }
                 else if (@case.Kind == UnionCaseTypeKind.Unmanaged)
                 {
                     var index = unmanaged_types![@case.Type];
-                    sb.Append($"this._impl._unmanaged_._{index}.Value");
+                    sb.Append($"this._impl._unmanaged_._{index}");
+                    if (!get) sb.Append($" = ");
+                    else sb.Append("!");
                 }
             }
 
@@ -353,7 +410,7 @@ public class TemplateStructUnion
             sb.Append($"        ");
             if (!ReadOnly) sb.Append($"readonly ");
             sb.Append($"get => !this.Is{@case.Name} ? default! : ");
-            GenField();
+            GenField(true);
             sb.AppendLine($";");
 
             #endregion
@@ -364,8 +421,8 @@ public class TemplateStructUnion
 
                 sb.AppendLine($"        {AggressiveInlining}");
                 sb.Append($"        set {{ if (this.Is{@case.Name}) {{ ");
-                GenField();
-                sb.AppendLine($" = value; }} }}");
+                GenField(false);
+                sb.AppendLine($"value; }} }}");
 
                 #endregion
             }

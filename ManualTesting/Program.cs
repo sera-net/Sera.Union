@@ -1,6 +1,8 @@
 ﻿using System.Runtime.InteropServices;
 using Sera.TaggedUnion;
 
+var f = new FileStruct();
+
 var a = SomeUnmanaged<int>.MakeFoo(123);
 Console.WriteLine(a);
 
@@ -13,8 +15,6 @@ Console.WriteLine(b);
 //var bar = new Bar<string>();
 //Console.WriteLine(bar);
 
-var ss = SomeSome<int>.MakeFoo(default);
-
 [Union]
 public partial struct SomeUnmanaged<T> where T : unmanaged
 {
@@ -22,6 +22,10 @@ public partial struct SomeUnmanaged<T> where T : unmanaged
     private interface Template
     {
         T Foo();
+        (T a, int b) A();
+        T[] B();
+        List<T> C();
+        int X();
     }
 }
 
@@ -32,16 +36,10 @@ public partial struct SomeClass<T> where T : class
     private interface Template
     {
         T Foo();
-    }
-}
-
-[Union]
-public partial struct SomeSome<T> where T : unmanaged
-{
-    [UnionTemplate]
-    private interface Template
-    {
-        (T a, int b) Foo();
+        (T a, int b) A();
+        T[] B();
+        List<T> C();
+        int X();
     }
 }
 
@@ -56,5 +54,7 @@ public partial struct SomeSome<T> where T : unmanaged
 //public struct Bar<T> where T : class
 //{
 //    [FieldOffset(0)]
-//    public T Value;
+//    public T[] Value;
 //}
+
+file struct FileStruct {}

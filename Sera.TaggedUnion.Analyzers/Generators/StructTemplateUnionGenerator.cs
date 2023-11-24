@@ -68,6 +68,7 @@ public class StructTemplateUnionGenerator : IIncrementalGenerator
                     }
                 }
                 var cases = new List<UnionCase>();
+                var any_generic = false;
                 foreach (var (template, template_symbol) in templates)
                 {
                     foreach (var (member, i) in template.Members.Select((a, b) => (a, b)))
@@ -86,10 +87,15 @@ public class StructTemplateUnionGenerator : IIncrementalGenerator
                                 tag = tag_attr.ConstructorArguments.First().Value?.ToString() ?? tag;
                             }
                             var ret_type_symbol = member_symbol.ReturnType;
-                            if (ret_type_symbol is ITypeParameterSymbol) kind = UnionCaseTypeKind.None;
-                            else if (ret_type_symbol.IsUnmanagedType) kind = UnionCaseTypeKind.Unmanaged;
+                            var is_generic = ret_type_symbol.IsNotInstGenericType();
+                            if (is_generic) any_generic = true;
+                            if (ret_type_symbol.IsUnmanagedType) kind = UnionCaseTypeKind.Unmanaged;
                             else if (ret_type_symbol.IsReferenceType) kind = UnionCaseTypeKind.Class;
-                            cases.Add(new UnionCase(case_name, tag, ret_type, kind));
+                            if (is_generic)
+                            {
+                                if (!ret_type_symbol.IsReferenceType) kind = UnionCaseTypeKind.None;
+                            }
+                            cases.Add(new UnionCase(case_name, tag, ret_type, kind, is_generic));
                         }
                         else
                         {
@@ -106,12 +112,12 @@ public class StructTemplateUnionGenerator : IIncrementalGenerator
                     }
                 }
                 var name = syntax.Identifier.ToString();
-                return (name, union_attr, readOnly, cases, genBase, diagnostics);
+                return (name, union_attr, readOnly, cases, any_generic, genBase, diagnostics);
             });
 
         context.RegisterSourceOutput(sources, static (ctx, input) =>
         {
-            var (name, union_attr, readOnly, cases, genBase, diagnostics) = input;
+            var (name, union_attr, readOnly, cases, any_generic, genBase, diagnostics) = input;
             if (diagnostics.Value.Count > 0)
             {
                 foreach (var diagnostic in diagnostics.Value)
@@ -119,7 +125,7 @@ public class StructTemplateUnionGenerator : IIncrementalGenerator
                     ctx.ReportDiagnostic(diagnostic);
                 }
             }
-            var code = new TemplateStructUnion(genBase, name, union_attr, readOnly, cases).Gen();
+            var code = new TemplateStructUnion(genBase, name, union_attr, readOnly, cases, any_generic).Gen();
             var sourceText = SourceText.From(code, Encoding.UTF8);
             var rawSourceFileName = genBase.FileFullName;
             var sourceFileName = $"{rawSourceFileName}.union.g.cs";

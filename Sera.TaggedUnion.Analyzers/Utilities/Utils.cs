@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -88,7 +89,14 @@ internal static class Utils
 
     public static DiagnosticDescriptor MakeError(LocalizableString msg)
         => new("EntityUniverse", msg, msg, "", DiagnosticSeverity.Error, true);
-    
+
     public static DiagnosticDescriptor MakeWarning(LocalizableString msg)
         => new("EntityUniverse", msg, msg, "", DiagnosticSeverity.Warning, true);
+
+    public static bool IsNotInstGenericType(this ITypeSymbol type) =>
+        type is ITypeParameterSymbol
+        || (type is INamedTypeSymbol { IsGenericType: true, TypeArguments: var typeArguments }
+            && typeArguments.Any(IsNotInstGenericType))
+        || (type is IArrayTypeSymbol { ElementType: var e } && e.IsNotInstGenericType())
+        || (type is IPointerTypeSymbol { PointedAtType: var p } && p.IsNotInstGenericType());
 }
