@@ -84,3 +84,19 @@ public partial struct Union7
 
 [Union(ExternalTags = true, ExternalTagsName = "Union8Foo")]
 public partial struct Union8 { }
+
+[Union]
+public partial class Union9
+{
+    [UnionTemplate]
+    private interface Template
+    {
+        int A();
+        string B();
+        bool C();
+        (int a, int b) D();
+        void E();
+        List<int>? F();
+        (int a, string b) G();
+    }
+}

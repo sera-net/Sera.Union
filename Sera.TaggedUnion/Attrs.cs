@@ -2,7 +2,7 @@
 
 namespace Sera.TaggedUnion;
 
-[AttributeUsage(AttributeTargets.Struct, Inherited = false)]
+[AttributeUsage(AttributeTargets.Struct | AttributeTargets.Class, Inherited = false)]
 public sealed class UnionAttribute : Attribute
 {
     /// <summary>Tags name</summary>

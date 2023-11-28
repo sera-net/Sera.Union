@@ -67,7 +67,7 @@ public record struct UnionAttr(string TagsName, bool ExternalTags, string Extern
 }
 
 public class TemplateStructUnion
-(GenBase GenBase, string Name, UnionAttr Attr, bool ReadOnly, List<UnionCase> Cases,
+(GenBase GenBase, string Name, UnionAttr Attr, bool ReadOnly, bool IsClass, List<UnionCase> Cases,
     bool AnyGeneric) : ATemplate(GenBase)
 {
     public const string AggressiveInlining =
@@ -78,6 +78,8 @@ public class TemplateStructUnion
     private List<StringBuilder> ExTypes = new();
 
     private string HashName = "";
+
+    private string @readonly => IsClass ? string.Empty : " readonly";
 
     protected override void DoGen()
     {
@@ -107,11 +109,11 @@ public class TemplateStructUnion
         sb.AppendLine($"#endif");
         sb.AppendLine("{");
 
-        sb.AppendLine(ReadOnly ? $"    private readonly {impl_name} _impl;" : $"    private {impl_name} _impl;");
+        sb.AppendLine(ReadOnly ? $"    private{@readonly} {impl_name} _impl;" : $"    private {impl_name} _impl;");
         sb.AppendLine($"    private {Name}({impl_name} _impl) {{ this._impl = _impl; }}");
 
         sb.AppendLine();
-        sb.AppendLine($"    public readonly {tags_name} Tag");
+        sb.AppendLine($"    public{@readonly} {tags_name} Tag");
         sb.AppendLine($"    {{");
         sb.AppendLine($"        {AggressiveInlining}");
         sb.AppendLine($"        get => this._impl._tag;");
@@ -196,7 +198,7 @@ public class TemplateStructUnion
 
         var __class_ = AnyGeneric ? $"ℍⅈⅆⅇ__{HashName}__class_" : "__class_";
         var __unmanaged_ = AnyGeneric ? $"ℍⅈⅆⅇ__{HashName}__unmanaged_" : "__unmanaged_";
-        
+
         if (dict.TryGetValue(UnionCaseTypeKind.Class, out _))
         {
             sb.AppendLine($"        public {__class_} _class_;");
@@ -220,7 +222,7 @@ public class TemplateStructUnion
             }
         }
 
-        sb.AppendLine($"        public readonly {tags_name} _tag;");
+        sb.AppendLine($"        public{@readonly} {tags_name} _tag;");
 
         if (dict.TryGetValue(UnionCaseTypeKind.Class, out var class_cases))
         {
@@ -355,7 +357,7 @@ public class TemplateStructUnion
     {
         foreach (var @case in Cases)
         {
-            sb.AppendLine($"    public readonly bool Is{@case.Name}");
+            sb.AppendLine($"    public{@readonly} bool Is{@case.Name}");
             sb.AppendLine($"    {{");
             sb.AppendLine($"        {AggressiveInlining}");
             sb.AppendLine($"        get => this._impl._tag == {tags_name}.{@case.Name};");
@@ -411,7 +413,7 @@ public class TemplateStructUnion
 
             sb.AppendLine($"        {AggressiveInlining}");
             sb.Append($"        ");
-            if (!ReadOnly) sb.Append($"readonly ");
+            if (!ReadOnly && !IsClass) sb.Append($"readonly ");
             sb.Append($"get => !this.Is{@case.Name} ? default! : ");
             GenField(true);
             sb.AppendLine($";");
@@ -436,11 +438,13 @@ public class TemplateStructUnion
 
     private void GenEquatable(string tags_name)
     {
+        var q = IsClass && TypeName.Last() != '?' ? "?" : string.Empty;
+
         #region Equals
 
         sb.AppendLine($"    {AggressiveInlining}");
         sb.AppendLine(
-            $"    public readonly bool Equals({TypeName} other) => this.Tag != other.Tag ? false : this.Tag switch");
+            $"    public{@readonly} bool Equals({TypeName}{q} other) => this.Tag != other{q}.Tag ? false : this.Tag switch");
         sb.AppendLine($"    {{");
         foreach (var @case in Cases)
         {
@@ -458,7 +462,7 @@ public class TemplateStructUnion
         #region HashCode
 
         sb.AppendLine($"    {AggressiveInlining}");
-        sb.AppendLine($"    public readonly override int GetHashCode() => this.Tag switch");
+        sb.AppendLine($"    public{@readonly} override int GetHashCode() => this.Tag switch");
         sb.AppendLine($"    {{");
         foreach (var @case in Cases)
         {
@@ -477,26 +481,28 @@ public class TemplateStructUnion
 
         sb.AppendLine($"    {AggressiveInlining}");
         sb.AppendLine(
-            $"    public readonly override bool Equals(object? obj) => obj is {TypeName} other && Equals(other);");
+            $"    public{@readonly} override bool Equals(object? obj) => obj is {TypeName} other && Equals(other);");
 
         sb.AppendLine();
 
         sb.AppendLine($"    {AggressiveInlining}");
-        sb.AppendLine($"    public static bool operator ==({TypeName} left, {TypeName} right) => Equals(left, right);");
+        sb.AppendLine($"    public static bool operator ==({TypeName}{q} left, {TypeName}{q} right) => Equals(left, right);");
         sb.AppendLine($"    {AggressiveInlining}");
         sb.AppendLine(
-            $"    public static bool operator !=({TypeName} left, {TypeName} right) => !Equals(left, right);");
+            $"    public static bool operator !=({TypeName}{q} left, {TypeName}{q} right) => !Equals(left, right);");
 
         #endregion
     }
 
     private void GenComparable(string tags_name)
     {
+        var q = IsClass && TypeName.Last() != '?' ? "?" : string.Empty;
+        
         #region CompareTo
 
         sb.AppendLine($"    {AggressiveInlining}");
         sb.AppendLine(
-            $"    public readonly int CompareTo({TypeName} other) => this.Tag != other.Tag ? global::System.Collections.Generic.Comparer<{tags_name}>.Default.Compare(this.Tag, other.Tag) : this.Tag switch");
+            $"    public{@readonly} int CompareTo({TypeName}{q} other) => this.Tag != other{q}.Tag ? global::System.Collections.Generic.Comparer<{tags_name}{q}>.Default.Compare(this.Tag, other{q}.Tag) : this.Tag switch");
         sb.AppendLine($"    {{");
         foreach (var @case in Cases)
         {
@@ -532,7 +538,7 @@ public class TemplateStructUnion
     private void GenToStr(string tags_name)
     {
         sb.AppendLine($"    {AggressiveInlining}");
-        sb.AppendLine($"    public readonly override string ToString() => this.Tag switch");
+        sb.AppendLine($"    public{@readonly} override string ToString() => this.Tag switch");
         sb.AppendLine($"    {{");
         foreach (var @case in Cases)
         {

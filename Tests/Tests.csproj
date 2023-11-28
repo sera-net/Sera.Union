@@ -20,6 +20,7 @@
     <ItemGroup>
       <ProjectReference Include="..\Sera.TaggedUnion.Analyzers\Sera.TaggedUnion.Analyzers.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
       <ProjectReference Include="..\Sera.TaggedUnion\Sera.TaggedUnion.csproj" />
+      <ProjectReference Include="..\Sera.Union.Utilities\Sera.Union.Utilities.csproj" />
     </ItemGroup>
 
 </Project>

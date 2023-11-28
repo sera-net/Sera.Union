@@ -11,33 +11,35 @@ using Sera.TaggedUnion.Analyzers.Utilities;
 namespace Sera.TaggedUnion.Analyzers.Generators;
 
 [Generator]
-public class StructTemplateUnionGenerator : IIncrementalGenerator
+public class UnionGenerator : IIncrementalGenerator
 {
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         var sources = context.SyntaxProvider.ForAttributeWithMetadataName(
                 "Sera.TaggedUnion.UnionAttribute",
-                static (syntax, _) => syntax is StructDeclarationSyntax,
+                static (syntax, _) => syntax is StructDeclarationSyntax or ClassDeclarationSyntax,
                 static (ctx, _) =>
                 {
                     var diagnostics = new List<Diagnostic>();
                     var attr = ctx.Attributes.First();
                     var union_attr = UnionAttr.FromData(attr, diagnostics);
-                    var syntax = (StructDeclarationSyntax)ctx.TargetNode;
+                    var syntax = (TypeDeclarationSyntax)ctx.TargetNode;
                     var semanticModel = ctx.SemanticModel;
                     var symbol = (INamedTypeSymbol)ctx.TargetSymbol;
                     var rawFullName = symbol.ToDisplayString();
                     var nameWraps = symbol.WrapNames();
                     var nameWrap = symbol.WrapName();
                     var readOnly = symbol.IsReadOnly;
-                    return (syntax, semanticModel, union_attr, readOnly, rawFullName, nameWraps, nameWrap,
+                    var isClass = syntax is ClassDeclarationSyntax;
+                    return (syntax, semanticModel, union_attr, readOnly, isClass, rawFullName, nameWraps, nameWrap,
                         AlwaysEq.Create(diagnostics));
                 }
             )
             .Combine(context.CompilationProvider)
             .Select(static (input, _) =>
             {
-                var ((syntax, semanticModel, union_attr, readOnly, rawFullName, nameWraps, nameWrap, diagnostics),
+                var ((syntax, semanticModel, union_attr, readOnly, isClass, rawFullName, nameWraps, nameWrap,
+                        diagnostics),
                         compilation) =
                     input;
                 var nullable = compilation.Options.NullableContextOptions;
@@ -112,12 +114,12 @@ public class StructTemplateUnionGenerator : IIncrementalGenerator
                     }
                 }
                 var name = syntax.Identifier.ToString();
-                return (name, union_attr, readOnly, cases, any_generic, genBase, diagnostics);
+                return (name, union_attr, readOnly, isClass, cases, any_generic, genBase, diagnostics);
             });
 
         context.RegisterSourceOutput(sources, static (ctx, input) =>
         {
-            var (name, union_attr, readOnly, cases, any_generic, genBase, diagnostics) = input;
+            var (name, union_attr, readOnly, isClass, cases, any_generic, genBase, diagnostics) = input;
             if (diagnostics.Value.Count > 0)
             {
                 foreach (var diagnostic in diagnostics.Value)
@@ -125,7 +127,7 @@ public class StructTemplateUnionGenerator : IIncrementalGenerator
                     ctx.ReportDiagnostic(diagnostic);
                 }
             }
-            var code = new TemplateStructUnion(genBase, name, union_attr, readOnly, cases, any_generic).Gen();
+            var code = new TemplateStructUnion(genBase, name, union_attr, readOnly, isClass, cases, any_generic).Gen();
             var sourceText = SourceText.From(code, Encoding.UTF8);
             var rawSourceFileName = genBase.FileFullName;
             var sourceFileName = $"{rawSourceFileName}.union.g.cs";
