@@ -2,6 +2,7 @@
 
 [![.NET](https://github.com/sera-net/Sera.Union/actions/workflows/dotnet.yml/badge.svg)](https://github.com/sera-net/Sera.Union/actions/workflows/dotnet.yml)
 [![Nuget](https://img.shields.io/nuget/v/Sera.Union)](https://www.nuget.org/packages/Sera.Union/)
+[![Nuget](https://img.shields.io/nuget/v/Sera.Union.Utilities)](https://www.nuget.org/packages/Sera.Union.Utilities/)
 ![MIT](https://img.shields.io/github/license/sera-net/Sera.Union)
 
 Generate Tagged Union using source generator
