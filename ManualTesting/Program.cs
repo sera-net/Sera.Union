@@ -1,6 +1,8 @@
 ﻿using System.Runtime.InteropServices;
 using Sera.TaggedUnion;
 
+#pragma warning disable CS0219
+
 var f = new FileStruct();
 
 var a = SomeUnmanaged<int>.MakeFoo(123);
@@ -57,7 +59,7 @@ public partial struct SomeClass<T> where T : class
 //    public T[] Value;
 //}
 
-file struct FileStruct {}
+file struct FileStruct { }
 
 [Union]
 public readonly partial struct Union1

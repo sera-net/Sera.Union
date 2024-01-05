@@ -1,0 +1,12 @@
+﻿{
+  "profiles": {
+    "DebugRoslynComponent for ManualTesting": {
+      "commandName": "DebugRoslynComponent",
+      "targetProject": "..\\ManualTesting\\ManualTesting.csproj"
+    },
+    "DebugRoslynComponent for Tests": {
+      "commandName": "DebugRoslynComponent",
+      "targetProject": "..\\Tests\\Tests.csproj"
+    }
+  }
+}

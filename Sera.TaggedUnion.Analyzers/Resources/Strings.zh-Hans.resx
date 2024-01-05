@@ -30,4 +30,7 @@
     <data name="Generator.Union.Error.Underlying" xml:space="preserve">
         <value>此类型不能作为 enum 的底层类型</value>
     </data>
+    <data name="Generator.Union.Info.PossiblyInvalidSymbol" xml:space="preserve">
+        <value>可能无效的符号，如果生成结果不对请使用 UnionSymbolAttribute 手动指定</value>
+    </data>
 </root>

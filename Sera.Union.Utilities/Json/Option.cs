@@ -16,7 +16,7 @@ public class OptionConverter : JsonConverterFactory
     public override JsonConverter? CreateConverter(Type typeToConvert, JsonSerializerOptions options)
     {
         var valueType = typeToConvert.GetGenericArguments()[0];
-        return (JsonConverter)Activator.CreateInstance(
+        return (JsonConverter?)Activator.CreateInstance(
             typeof(OptionConverter<>).MakeGenericType(valueType),
             options
         );

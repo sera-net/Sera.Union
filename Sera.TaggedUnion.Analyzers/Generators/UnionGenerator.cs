@@ -71,7 +71,7 @@ public class UnionGenerator : IIncrementalGenerator
                 }
                 var cases = new List<UnionCase>();
                 var any_generic = false;
-                foreach (var (template, template_symbol) in templates)
+                foreach (var (template, _) in templates)
                 {
                     foreach (var (member, i) in template.Members.Select((a, b) => (a, b)))
                     {
@@ -97,11 +97,50 @@ public class UnionGenerator : IIncrementalGenerator
                             {
                                 if (!ret_type_symbol.IsReferenceType) kind = UnionCaseTypeKind.None;
                             }
+                            var symbol_attr = member_symbol.GetAttributes().FirstOrDefault(a =>
+                                a.AttributeClass?.ToDisplayString() == "Sera.TaggedUnion.UnionSymbolAttribute");
+                            if (symbol_attr == null)
+                            {
+                                symbol_attr = ret_type_symbol.GetAttributes().FirstOrDefault(a =>
+                                    a.AttributeClass?.ToDisplayString() == "Sera.TaggedUnion.UnionSymbolAttribute");
+                            }
+                            if (symbol_attr != null)
+                            {
+                                var args = symbol_attr.NamedArguments.ToDictionary(a => a.Key, a => a.Value);
+                                var symbol_attr_IsUnmanagedType = MayBool.None;
+                                var symbol_attr_IsReferenceType = MayBool.None;
+                                if (args.TryGetValue("IsUnmanagedType", out var _symbol_attr_IsUnmanagedType))
+                                    symbol_attr_IsUnmanagedType = (MayBool)(byte)_symbol_attr_IsUnmanagedType.Value!;
+                                else if (args.TryGetValue("IsReferenceType", out var _symbol_attr_IsReferenceType))
+                                    symbol_attr_IsReferenceType = (MayBool)(byte)_symbol_attr_IsReferenceType.Value!;
+                                if (symbol_attr_IsUnmanagedType is MayBool.True) kind = UnionCaseTypeKind.Unmanaged;
+                                else if (symbol_attr_IsReferenceType is MayBool.True) kind = UnionCaseTypeKind.Class;
+                                if (is_generic)
+                                {
+                                    if (symbol_attr_IsReferenceType is MayBool.False) kind = UnionCaseTypeKind.None;
+                                }
+                                if (symbol_attr_IsUnmanagedType is MayBool.False && kind is UnionCaseTypeKind.Unmanaged)
+                                    kind = UnionCaseTypeKind.None;
+                                if (symbol_attr_IsReferenceType is MayBool.False && kind is UnionCaseTypeKind.Class)
+                                    kind = UnionCaseTypeKind.None;
+                            }
+                            if (symbol_attr == null)
+                            {
+                                if (ret_type_symbol is not ITypeParameterSymbol &&
+                                    SymbolEqualityComparer.Default.Equals(
+                                        ret_type_symbol.OriginalDefinition.ContainingAssembly,
+                                        compilation.Assembly))
+                                {
+                                    var desc = Utils.MakeInfo(
+                                        Strings.Get("Generator.Union.Info.PossiblyInvalidSymbol"));
+                                    diagnostics.Value.Add(Diagnostic.Create(desc, member.GetLocation()));
+                                }
+                            }
                             cases.Add(new UnionCase(case_name, tag, ret_type, kind, is_generic));
                         }
                         else
                         {
-                            var desc = Utils.MakeWarning(Strings.Get(" Generator.Union.Error.IllegalTemplateMember"));
+                            var desc = Utils.MakeWarning(Strings.Get("Generator.Union.Error.IllegalTemplateMember"));
                             if (member is BaseTypeDeclarationSyntax bts)
                             {
                                 diagnostics.Value.Add(Diagnostic.Create(desc, bts.Identifier.GetLocation()));

@@ -30,4 +30,7 @@
     <data name="Generator.Union.Error.Underlying" xml:space="preserve">
         <value>This type cannot be used as the underlying type of enum</value>
     </data>
+    <data name="Generator.Union.Info.PossiblyInvalidSymbol" xml:space="preserve">
+        <value>Possibly invalid symbols. If the generated result is incorrect, please use UnionSymbolAttribute to specify it manually.</value>
+    </data>
 </root>

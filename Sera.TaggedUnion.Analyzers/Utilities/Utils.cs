@@ -92,6 +92,9 @@ internal static class Utils
 
     public static DiagnosticDescriptor MakeWarning(LocalizableString msg)
         => new("EntityUniverse", msg, msg, "", DiagnosticSeverity.Warning, true);
+    
+    public static DiagnosticDescriptor MakeInfo(LocalizableString msg)
+        => new("EntityUniverse", msg, msg, "", DiagnosticSeverity.Info, true);
 
     public static bool IsNotInstGenericType(this ITypeSymbol type) =>
         type is ITypeParameterSymbol

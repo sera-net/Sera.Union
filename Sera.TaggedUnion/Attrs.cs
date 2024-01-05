@@ -1,4 +1,5 @@
 ﻿using System;
+using Sera.TaggedUnion.Misc;
 
 namespace Sera.TaggedUnion;
 
@@ -22,4 +23,29 @@ public sealed class UnionTemplateAttribute : Attribute;
 public sealed class UnionTagAttribute(object tag) : Attribute
 {
     public object Tag { get; } = tag;
+}
+
+/// <summary>
+/// Manually specify symbol semantics
+/// </summary>
+[AttributeUsage(AttributeTargets.Method | AttributeTargets.Struct | AttributeTargets.Class, Inherited = false)]
+public sealed class UnionSymbolAttribute : Attribute
+{
+    /// <summary>
+    /// True if the type is unmanaged according to language rules. False if managed or if the language
+    /// has no concept of unmanaged types.
+    /// </summary>
+    public MayBool IsUnmanagedType { get; set; }
+    /// <summary>
+    /// True if this type is known to be a reference type. It is never the case that
+    /// <see cref="IsReferenceType"/> and <see cref="IsValueType"/> both return true. However, for an unconstrained type
+    /// parameter, <see cref="IsReferenceType"/> and <see cref="IsValueType"/> will both return false.
+    /// </summary>
+    public MayBool IsReferenceType { get; set; }
+    /// <summary>
+    /// True if this type is known to be a value type. It is never the case that
+    /// <see cref="IsReferenceType"/> and <see cref="IsValueType"/> both return true. However, for an unconstrained type
+    /// parameter, <see cref="IsReferenceType"/> and <see cref="IsValueType"/> will both return false.
+    /// </summary>
+    public MayBool IsValueType { get; set; }
 }

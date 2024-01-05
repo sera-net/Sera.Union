@@ -16,7 +16,7 @@ public class ResultConverter : JsonConverterFactory
     public override JsonConverter? CreateConverter(Type typeToConvert, JsonSerializerOptions options)
     {
         var args = typeToConvert.GetGenericArguments();
-        return (JsonConverter)Activator.CreateInstance(
+        return (JsonConverter?)Activator.CreateInstance(
             typeof(ResultConverter<,>).MakeGenericType(args),
             options
         );

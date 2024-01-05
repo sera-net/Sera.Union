@@ -7,7 +7,7 @@
         <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
         <AssemblyName>Sera.Union.Utilities</AssemblyName>
         <RootNamespace>Sera.TaggedUnion.Utilities</RootNamespace>
-        <Version>0.5.1</Version>
+        <Version>0.6.0</Version>
         <Description>Tagged union for c#</Description>
         <PackageProjectUrl>https://github.com/sera-net/Sera.Union</PackageProjectUrl>
         <RepositoryUrl>https://github.com/sera-net/Sera.Union</RepositoryUrl>
