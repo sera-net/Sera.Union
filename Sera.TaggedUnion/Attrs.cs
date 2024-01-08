@@ -14,9 +14,35 @@ public sealed class UnionAttribute : Attribute
     public string ExternalTagsName { get; set; } = "{0}Tags";
     /// <summary>The underlying type of the Tags enum, the smallest required type is used by default</summary>
     public Type? TagsUnderlying { get; set; }
+    /// <summary>
+    /// Whether to generate override of <see cref="object.ToString()"/>
+    /// </summary>
+    public bool GenerateToString { get; set; } = true;
+#if NET7_0_OR_GREATER
+    /// <summary>
+    /// Whether to generate override of <see cref="object.Equals(object)"/>, <see cref="object.GetHashCode()"/>,
+    /// and implementation of <see cref="IEquatable{T}"/>, <see cref="System.Numerics.IEqualityOperators{A,B,C}"/>
+    /// </summary>
+#else
+    /// <summary>
+    /// Whether to generate override of <see cref="object.Equals(object)"/>, <see cref="object.GetHashCode()"/>,
+    /// and implementation of <see cref="IEquatable{T}"/>
+    /// </summary>
+#endif
+    public bool GenerateEquals { get; set; } = true;
+#if NET7_0_OR_GREATER
+    /// <summary>
+    /// Whether to generate implementation of <see cref="IComparable{T}"/>, <see cref="System.Numerics.IComparisonOperators{A,B,C}"/>
+    /// </summary>
+#else
+    /// <summary>
+    /// Whether to generate implementation of <see cref="IComparable{T}"/>
+    /// </summary>
+#endif
+    public bool GenerateCompareTo { get; set; } = true;
 }
 
-[AttributeUsage(AttributeTargets.Interface, Inherited = false)]
+[AttributeUsage(AttributeTargets.Interface)]
 public sealed class UnionTemplateAttribute : Attribute;
 
 [AttributeUsage(AttributeTargets.Method, Inherited = false)]

@@ -100,3 +100,9 @@ public partial class Union9
         (int a, string b) G();
     }
 }
+
+[Union(GenerateEquals = false, GenerateCompareTo = false)]
+public partial class Union10
+{
+    public override string ToString() => "Fuck";
+}

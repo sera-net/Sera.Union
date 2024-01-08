@@ -66,9 +66,17 @@ public record struct UnionAttr(string TagsName, bool ExternalTags, string Extern
     }
 }
 
-public class TemplateStructUnion
-(GenBase GenBase, string Name, UnionAttr Attr, bool ReadOnly, bool IsClass, List<UnionCase> Cases,
-    bool AnyGeneric) : ATemplate(GenBase)
+public record struct UnionGenerateMethod(bool genToString, bool genEquals, bool genCompareTo);
+
+public class TemplateStructUnion(
+    GenBase GenBase,
+    string Name,
+    UnionAttr Attr,
+    bool ReadOnly,
+    bool IsClass,
+    List<UnionCase> Cases,
+    bool AnyGeneric,
+    UnionGenerateMethod genMethods) : ATemplate(GenBase)
 {
     public const string AggressiveInlining =
         "[global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]";
@@ -101,12 +109,19 @@ public class TemplateStructUnion
 
         sb.AppendLine(GenBase.Target.Code);
         sb.AppendLine($"    : global::Sera.TaggedUnion.ITaggedUnion");
-        sb.AppendLine($"    , global::System.IEquatable<{TypeName}>");
-        sb.AppendLine($"    , global::System.IComparable<{TypeName}>");
-        sb.AppendLine($"#if NET7_0_OR_GREATER");
-        sb.AppendLine($"    , global::System.Numerics.IEqualityOperators<{TypeName}, {TypeName}, bool>");
-        sb.AppendLine($"    , global::System.Numerics.IComparisonOperators<{TypeName}, {TypeName}, bool>");
-        sb.AppendLine($"#endif");
+        if (genMethods.genEquals)
+            sb.AppendLine($"    , global::System.IEquatable<{TypeName}>");
+        if (genMethods.genCompareTo)
+            sb.AppendLine($"    , global::System.IComparable<{TypeName}>");
+        if (genMethods.genEquals || genMethods.genCompareTo)
+        {
+            sb.AppendLine($"#if NET7_0_OR_GREATER");
+            if (genMethods.genEquals)
+                sb.AppendLine($"    , global::System.Numerics.IEqualityOperators<{TypeName}, {TypeName}, bool>");
+            if (genMethods.genCompareTo)
+                sb.AppendLine($"    , global::System.Numerics.IComparisonOperators<{TypeName}, {TypeName}, bool>");
+            sb.AppendLine($"#endif");
+        }
         sb.AppendLine("{");
 
         sb.AppendLine(ReadOnly ? $"    private{@readonly} {impl_name} _impl;" : $"    private {impl_name} _impl;");
@@ -305,7 +320,7 @@ public class TemplateStructUnion
     private void GenMakeEmpty()
     {
         sb.AppendLine($"    {AggressiveInlining}");
-        sb.AppendLine($"    public static {TypeName} Make() => default;");
+        sb.AppendLine($"    public static {TypeName} Make() => new(default(__impl_)!);");
     }
 
     private void GenMake(string impl_name, string tags_name)
@@ -438,6 +453,8 @@ public class TemplateStructUnion
 
     private void GenEquatable(string tags_name)
     {
+        if (!genMethods.genEquals) return;
+
         var q = IsClass && TypeName.Last() != '?' ? "?" : string.Empty;
 
         #region Equals
@@ -486,7 +503,8 @@ public class TemplateStructUnion
         sb.AppendLine();
 
         sb.AppendLine($"    {AggressiveInlining}");
-        sb.AppendLine($"    public static bool operator ==({TypeName}{q} left, {TypeName}{q} right) => Equals(left, right);");
+        sb.AppendLine(
+            $"    public static bool operator ==({TypeName}{q} left, {TypeName}{q} right) => Equals(left, right);");
         sb.AppendLine($"    {AggressiveInlining}");
         sb.AppendLine(
             $"    public static bool operator !=({TypeName}{q} left, {TypeName}{q} right) => !Equals(left, right);");
@@ -496,8 +514,10 @@ public class TemplateStructUnion
 
     private void GenComparable(string tags_name)
     {
+        if (!genMethods.genCompareTo) return;
+
         var q = IsClass && TypeName.Last() != '?' ? "?" : string.Empty;
-        
+
         #region CompareTo
 
         sb.AppendLine($"    {AggressiveInlining}");
@@ -537,6 +557,7 @@ public class TemplateStructUnion
 
     private void GenToStr(string tags_name)
     {
+        if (!genMethods.genToString) return;
         sb.AppendLine($"    {AggressiveInlining}");
         sb.AppendLine($"    public{@readonly} override string ToString() => this.Tag switch");
         sb.AppendLine($"    {{");

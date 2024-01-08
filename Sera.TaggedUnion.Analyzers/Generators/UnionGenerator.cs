@@ -31,16 +31,28 @@ public class UnionGenerator : IIncrementalGenerator
                     var nameWrap = symbol.WrapName();
                     var readOnly = symbol.IsReadOnly;
                     var isClass = syntax is ClassDeclarationSyntax;
-                    return (syntax, semanticModel, union_attr, readOnly, isClass, rawFullName, nameWraps, nameWrap,
-                        AlwaysEq.Create(diagnostics));
+                    var hasToString = symbol.GetMembers("ToString")
+                        .Where(s => s is IMethodSymbol)
+                        .Cast<IMethodSymbol>()
+                        .Any(s => s.TypeParameters.Length == 0 && s.Parameters.Length == 0);
+                    var NamedArguments = attr.NamedArguments.ToDictionary(a => a.Key, a => a.Value);
+                    var genToString = NamedArguments.TryGetValue("GenerateToString", out var _GenerateToString)
+                        ? (bool)_GenerateToString.Value!
+                        : !hasToString;
+                    var genEquals = !NamedArguments.TryGetValue("GenerateEquals", out var _GenerateEquals) ||
+                                    (bool)_GenerateEquals.Value!;
+                    var genCompareTo = !NamedArguments.TryGetValue("GenerateCompareTo", out var _GenerateCompareTo) ||
+                                       (bool)_GenerateCompareTo.Value!;
+                    var genMethods = new UnionGenerateMethod(genToString, genEquals, genCompareTo);
+                    return (syntax, semanticModel, union_attr, readOnly, isClass, genMethods,
+                        rawFullName, nameWraps, nameWrap, AlwaysEq.Create(diagnostics));
                 }
             )
             .Combine(context.CompilationProvider)
             .Select(static (input, _) =>
             {
-                var ((syntax, semanticModel, union_attr, readOnly, isClass, rawFullName, nameWraps, nameWrap,
-                        diagnostics),
-                        compilation) =
+                var ((syntax, semanticModel, union_attr, readOnly, isClass, genMethods, rawFullName, nameWraps,
+                        nameWrap, diagnostics), compilation) =
                     input;
                 var nullable = compilation.Options.NullableContextOptions;
                 var usings = new HashSet<string>();
@@ -153,12 +165,12 @@ public class UnionGenerator : IIncrementalGenerator
                     }
                 }
                 var name = syntax.Identifier.ToString();
-                return (name, union_attr, readOnly, isClass, cases, any_generic, genBase, diagnostics);
+                return (name, union_attr, readOnly, isClass, cases, any_generic, genMethods, genBase, diagnostics);
             });
 
         context.RegisterSourceOutput(sources, static (ctx, input) =>
         {
-            var (name, union_attr, readOnly, isClass, cases, any_generic, genBase, diagnostics) = input;
+            var (name, union_attr, readOnly, isClass, cases, any_generic, genMethods, genBase, diagnostics) = input;
             if (diagnostics.Value.Count > 0)
             {
                 foreach (var diagnostic in diagnostics.Value)
@@ -166,7 +178,10 @@ public class UnionGenerator : IIncrementalGenerator
                     ctx.ReportDiagnostic(diagnostic);
                 }
             }
-            var code = new TemplateStructUnion(genBase, name, union_attr, readOnly, isClass, cases, any_generic).Gen();
+            var code = new TemplateStructUnion(
+                    genBase, name, union_attr, readOnly, isClass, cases, any_generic, genMethods
+                )
+                .Gen();
             var sourceText = SourceText.From(code, Encoding.UTF8);
             var rawSourceFileName = genBase.FileFullName;
             var sourceFileName = $"{rawSourceFileName}.union.g.cs";
