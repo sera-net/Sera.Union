@@ -49,7 +49,7 @@ internal static class Utils
             { IsValueType: false, IsRecord: true, IsAbstract: false } => "partial record",
             { IsValueType: false, IsRecord: true, IsAbstract: true } => "abstract partial record",
             { IsValueType: false, IsStatic: true } => "static partial class",
-            { IsValueType: false, IsAbstract: true, } => "abstract partial record",
+            { IsValueType: false, IsAbstract: true, } => "abstract partial class",
             _ => "partial class",
         };
         var generic = string.Empty;
